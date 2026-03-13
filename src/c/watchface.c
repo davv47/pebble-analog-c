@@ -95,9 +95,12 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 
         GColor color = (GColor){ .argb = cal_color_argb[ev->cal_index % 3] };
         graphics_context_set_stroke_color(ctx, color);
-        graphics_context_set_stroke_width(ctx, 5);
+        graphics_context_set_stroke_width(ctx, 8);
 
         // Approximate the arc with short line segments (3° steps).
+        // Uses the same sin/cos convention as the clock hands:
+        // x = centre + sin(angle) * r,  y = centre - cos(angle) * r
+        // so degree 0 = 12 o'clock, increasing clockwise.
         for (int deg = start_deg; deg < end_deg; deg += 3) {
             int d2 = (deg + 3 < end_deg) ? deg + 3 : end_deg;
 

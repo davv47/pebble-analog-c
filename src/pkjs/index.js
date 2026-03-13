@@ -97,12 +97,31 @@ function parseICS(raw, calendarIndex, now, cutoff) {
                 if (!end) end = new Date(start.getTime() + 60 * 60 * 1000);
 
                 if (end > now && start < cutoff) {
-                    var clampedStart  = start < now ? now : start;
-                    // startMins = minutes from now (0–720)
-                    var startMins     = Math.round((clampedStart - now) / 60000);
-                    var durationMins  = Math.round((end - clampedStart) / 60000);
-                    durationMins = Math.min(durationMins, 12 * 60);
-                    if (durationMins > 0 && startMins < 720) {
+                    // startMins = absolute position on the 12-hour clock face.
+                    // e.g. 2:37 PM → (14*60 + 37) % 720 = 157 minutes
+                    // This makes the arc sit at the same position as the hands,
+                    // so an ongoing game has the hour hand inside the arc.
+                    var startH    = start.getHours();
+                    var startM    = start.getMinutes();
+                    var startMins = (startH * 60 + startM) % 720;
+
+                    var endH      = end.getHours();
+                    var endM      = end.getMinutes();
+                    var endMins   = (endH * 60 + endM) % 720;
+
+                    // Duration in clock-face minutes. If end wraps past 12,
+                    // add 720 to keep it positive.
+                    var durationMins = endMins - startMins;
+                    if (durationMins <= 0) durationMins += 720;
+                    durationMins = Math.min(durationMins, 720);
+
+                    console.log("Event cal=" + calendarIndex +
+                        " start=" + start.toUTCString() +
+                        " end=" + end.toUTCString() +
+                        " startMins=" + startMins +
+                        " durationMins=" + durationMins);
+
+                    if (durationMins > 0) {
                         events.push({
                             calIndex: calendarIndex,
                             startMins: startMins,
@@ -193,9 +212,10 @@ function fetchAllCalendars() {
         return;
     }
 
-    // Cutoff = 12 hours from now (matches the arc ring window)
+    // Cutoff = 24h so events later today/tomorrow are included.
     var now    = new Date();
-    var cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+    var cutoff = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    console.log("Fetching calendars: now=" + now.toUTCString() + " cutoff=" + cutoff.toUTCString());
     var allEvents = [];
     var pending   = urls.length;
 
