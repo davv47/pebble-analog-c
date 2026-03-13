@@ -1,5 +1,5 @@
 // index.js — PebbleKit JS
-console.log("index.js v4 loaded");
+console.log("index.js v5 loaded");
 
 // ─── Weather ──────────────────────────────────────────────────────────────────
 
@@ -97,12 +97,17 @@ function parseICS(raw, calendarIndex, now, cutoff) {
                 if (!end) end = new Date(start.getTime() + 60 * 60 * 1000);
 
                 if (end > now && start < cutoff) {
-                    var clampedStart = start < now ? now : start;
-                    var startMins = clampedStart.getHours() * 60 + clampedStart.getMinutes();
-                    var durationMins = Math.round((end - clampedStart) / 60000);
+                    var clampedStart  = start < now ? now : start;
+                    // startMins = minutes from now (0–720)
+                    var startMins     = Math.round((clampedStart - now) / 60000);
+                    var durationMins  = Math.round((end - clampedStart) / 60000);
                     durationMins = Math.min(durationMins, 12 * 60);
-                    if (durationMins > 0) {
-                        events.push({ calIndex: calendarIndex, startMins: startMins, durationMins: durationMins });
+                    if (durationMins > 0 && startMins < 720) {
+                        events.push({
+                            calIndex: calendarIndex,
+                            startMins: startMins,
+                            durationMins: durationMins
+                        });
                     }
                 }
             }
@@ -129,18 +134,22 @@ function parseICS(raw, calendarIndex, now, cutoff) {
 // ─── Send to watch ────────────────────────────────────────────────────────────
 
 function sendEventsToWatch(events) {
+    // Sort by start time so the most imminent events appear first
     events.sort(function(a, b) { return a.startMins - b.startMins; });
 
-    // LIMIT events to match C MAX_EVENTS (3)
+    // Limit to MAX_EVENTS (must match #define MAX_EVENTS 3 in main.c)
     events = events.slice(0, 3);
 
+    // Pack as "startMins,durationMins,calIndex" joined by "|"
+    // e.g. "0,90,0|120,30,1|480,60,2"
     var packed = events.map(function(e) {
         return e.startMins + "," + e.durationMins + "," + e.calIndex;
     }).join("|");
 
     console.log("Sending " + events.length + " events: " + packed);
 
-    Pebble.sendAppMessage({ "CalendarEvents": packed }, function() {
+    // Use numeric key 5 to match KEY_CALENDAR_EVENTS in main.c
+    Pebble.sendAppMessage({ 5: packed }, function() {
         console.log("Events sent successfully");
     }, function(e) {
         console.log("Send failed: " + JSON.stringify(e));
@@ -184,8 +193,9 @@ function fetchAllCalendars() {
         return;
     }
 
+    // Cutoff = 12 hours from now (matches the arc ring window)
     var now    = new Date();
-    var cutoff = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    var cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000);
     var allEvents = [];
     var pending   = urls.length;
 
@@ -204,8 +214,8 @@ Pebble.addEventListener("ready", function() {
     console.log("PebbleKit JS ready");
 
     localStorage.setItem("calendarConfig", JSON.stringify({
-      url0: "https://ics.ecal.com/ecal-sub/68e3f1dc4a81aa0008f1e150/MLB%20.ics",
-      url1: "",//url1: "https://calendar.google.com/calendar/ical/eb387eef59ac5c4b972f1cfc5ca172dbed93736f4d2433ac9865104467e50b9a%40group.calendar.google.com/public/basic.ics",
+        url0: "https://ics.ecal.com/ecal-sub/68e3f1dc4a81aa0008f1e150/MLB%20.ics",
+        url1: "",
         url2: ""
     }));
 
