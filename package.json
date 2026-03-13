@@ -1,0 +1,49 @@
+{
+    "author": "dfrench47@gmail.com",
+    "dependencies": {},
+    "keywords": [],
+    "name": "pebble-analog-c",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "pebble-analog-c",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "BackgroundColor",
+            "TextColor",
+            "TemperatureUnit[2]",
+            "ShowDate[3]",
+            "HourFormat[4]",
+            "CalendarEvents[5]",
+            "WeatherTemp[6]",
+            "WeatherCode[7]"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "fonts/Jersey10-Regular.ttf",
+                    "name": "JERSEY10_24",
+                    "targetPlatforms": null,
+                    "type": "font"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery",
+            "gabbro",
+            "flint"
+        ],
+        "uuid": "45317442-ba17-4b73-ba86-49802a539d85",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
+}
