@@ -9,16 +9,16 @@
         ],
         "displayName": "pebble-analog-c",
         "enableMultiJS": true,
-        "messageKeys": [
-            "BackgroundColor",
-            "TextColor",
-            "TemperatureUnit[2]",
-            "ShowDate[3]",
-            "HourFormat[4]",
-            "CalendarEvents[5]",
-            "WeatherTemp[6]",
-            "WeatherCode[7]"
-        ],
+        "messageKeys": {
+            "BackgroundColour": 0,
+            "CalendarEvents": 5,
+            "HourFormat": 4,
+            "ShowDate": 3,
+            "TemperatureUnit": 2,
+            "TextColor": 1,
+            "WeatherCode": 7,
+            "WeatherTemp": 6
+        },
         "projectType": "native",
         "resources": {
             "media": [

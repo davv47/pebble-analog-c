@@ -130,7 +130,9 @@ function parseICS(raw, calendarIndex, now, cutoff) {
 
 function sendEventsToWatch(events) {
     events.sort(function(a, b) { return a.startMins - b.startMins; });
-    events = events.slice(0, 10);
+
+    // LIMIT events to match C MAX_EVENTS (3)
+    events = events.slice(0, 3);
 
     var packed = events.map(function(e) {
         return e.startMins + "," + e.durationMins + "," + e.calIndex;
@@ -182,7 +184,6 @@ function fetchAllCalendars() {
         return;
     }
 
-    // 30 days ahead for testing — change to 12 * 60 * 60 * 1000 before publishing
     var now    = new Date();
     var cutoff = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     var allEvents = [];
@@ -202,12 +203,11 @@ function fetchAllCalendars() {
 Pebble.addEventListener("ready", function() {
     console.log("PebbleKit JS ready");
 
-    // TEMP: hardcoded test calendar — remove before publishing
     localStorage.setItem("calendarConfig", JSON.stringify({
-        url0: "https://calendar.google.com/calendar/ical/eb387eef59ac5c4b972f1cfc5ca172dbed93736f4d2433ac9865104467e50b9a%40group.calendar.google.com/public/basic.ics",
-        url1: "", url2: ""
+      url0: "https://ics.ecal.com/ecal-sub/68e3f1dc4a81aa0008f1e150/MLB%20.ics",
+      url1: "",//url1: "https://calendar.google.com/calendar/ical/eb387eef59ac5c4b972f1cfc5ca172dbed93736f4d2433ac9865104467e50b9a%40group.calendar.google.com/public/basic.ics",
+        url2: ""
     }));
-    // END TEMP
 
     navigator.geolocation.getCurrentPosition(function(pos) {
         var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
