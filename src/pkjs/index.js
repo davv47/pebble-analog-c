@@ -156,7 +156,7 @@ function sendDisplaySettings() {
 
 function sendEventsToWatch(events) {
     events.sort(function(a, b) { return a.startMins - b.startMins; });
-    events = events.slice(0, 3);
+    events = events.slice(0, 10);
     var packed = events.map(function(e) {
         return e.startMins + "," + e.durationMins + "," + e.calIndex;
     }).join("|");
