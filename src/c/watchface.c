@@ -5,7 +5,7 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-// ─── Message keys ─────────────────────────────────────────────
+// --- Message keys ---------------------------------------------
 #define KEY_BACKGROUND_COLOR  0
 #define KEY_TEXT_COLOR        1
 #define KEY_TEMPERATURE_UNIT  2
@@ -15,11 +15,11 @@
 #define KEY_WEATHER_TEMP      6
 #define KEY_WEATHER_CODE      7
 #define KEY_SHOW_TICKS        8
-// 9–11 retired (individual cal colour keys replaced by packed string)
+// 9-11 retired (individual cal colour keys replaced by packed string)
 #define KEY_HOUR_HAND_COLOR   12
 #define KEY_CAL_COLORS        13  // packed "c0,c1,c2,...,c9" palette indices
 
-// ─── Colour palette ───────────────────────────────────────────
+// --- Colour palette -------------------------------------------
 // Must match PALETTE in index.html exactly.
 static const uint8_t s_palette_argb[16] = {
     GColorMintGreenARGB8,        //  0 Teal
@@ -45,17 +45,17 @@ static GColor palette_color(int idx) {
     return (GColor){ .argb = s_palette_argb[idx] };
 }
 
-// ─── Calendar config ──────────────────────────────────────────
+// --- Calendar config ------------------------------------------
 #define MAX_CALENDARS 10
-#define MAX_EVENTS    3   // max arcs on screen at once
+#define MAX_EVENTS    10  // max arcs on screen at once
 
 typedef struct {
     int start_mins;
     int duration_mins;
-    int cal_index;   // 0–9, indexes into s_cal_color_idx
+    int cal_index;   // 0-9, indexes into s_cal_color_idx
 } CalEvent;
 
-// ─── State ───────────────────────────────────────────────────
+// --- State ---------------------------------------------------
 static Window *s_window;
 static Layer  *s_canvas_layer;
 
@@ -78,7 +78,7 @@ static int      s_event_count = 0;
 static GFont s_small_font;
 static GFont s_date_font;
 
-// ─── Square perimeter helper ──────────────────────────────────
+// --- Square perimeter helper ----------------------------------
 static GPoint perimeter_point(GRect bounds, int inset, int angle_deg) {
     int w = bounds.size.w;
     int h = bounds.size.h;
@@ -99,7 +99,7 @@ static GPoint perimeter_point(GRect bounds, int inset, int angle_deg) {
     return GPoint(x, y);
 }
 
-// ─── Proximity helpers ────────────────────────────────────────
+// --- Proximity helpers ----------------------------------------
 static bool segment_near_rect(int x0, int y0, int x1, int y1,
                                int rx, int ry, int rw, int rh,
                                int threshold) {
@@ -124,7 +124,7 @@ static bool point_near_rect(int px, int py,
     return (dx <= rw / 2 + threshold && dy <= rh / 2 + threshold);
 }
 
-// ─── Shadow decision ──────────────────────────────────────────
+// --- Shadow decision ------------------------------------------
 static bool compute_show_shadow(GRect bounds, GPoint centre,
                                  int clock_radius, bool is_round,
                                  int hour_len, int min_len,
@@ -205,7 +205,7 @@ static bool compute_show_shadow(GRect bounds, GPoint centre,
     return false;
 }
 
-// ─── Weather icon drawing ─────────────────────────────────────
+// --- Weather icon drawing -------------------------------------
 
 static void draw_cloud(GContext *ctx, int ox, int oy, bool shadow) {
     if (shadow) {
@@ -346,7 +346,7 @@ static void draw_weather_icon(GContext *ctx, int code, int ox, int oy, bool shad
     else if (code >= 95 && code <= 99)  draw_thunder(ctx, ox, oy, shadow);
 }
 
-// ─── Canvas draw ─────────────────────────────────────────────
+// --- Canvas draw ---------------------------------------------
 static void canvas_update_proc(Layer *layer, GContext *ctx) {
     GRect   bounds = layer_get_bounds(layer);
     GPoint  centre = GPoint(bounds.size.w / 2, bounds.size.h / 2);
@@ -381,7 +381,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
         hour_len, min_len, hour_angle, min_angle,
         wx, wy, ww, wh);
 
-    // ── Hour tick marks ───────────────────────────────────────
+    // -- Hour tick marks ---------------------------------------
     if (s_show_ticks) {
         int arc_inset = 4;
         graphics_context_set_stroke_color(ctx, GColorWhite);
@@ -418,7 +418,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
         }
     }
 
-    // ── Calendar arc ring ─────────────────────────────────────
+    // -- Calendar arc ring -------------------------------------
     int arc_stroke = 8;
     for (int i = 0; i < s_event_count; i++) {
         CalEvent *ev = &s_events[i];
@@ -457,7 +457,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
         }
     }
 
-    // ── Hour hand ─────────────────────────────────────────────
+    // -- Hour hand ---------------------------------------------
     graphics_context_set_stroke_color(ctx, palette_color(s_hour_hand_color));
     graphics_context_set_stroke_width(ctx, 4);
     GPoint tip_hour = GPoint(
@@ -465,7 +465,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
         centre.y - cos_lookup(DEG_TO_TRIGANGLE(hour_angle)) * hour_len / TRIG_MAX_RATIO);
     graphics_draw_line(ctx, centre, tip_hour);
 
-    // ── Minute hand ───────────────────────────────────────────
+    // -- Minute hand -------------------------------------------
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_context_set_stroke_width(ctx, 2);
     GPoint tip_min = GPoint(
@@ -476,7 +476,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_rect(ctx, GRect(centre.x - 3, centre.y - 3, 6, 6), 0, GCornerNone);
 
-    // ── Weather ───────────────────────────────────────────────
+    // -- Weather -----------------------------------------------
     char weather_str[32] = "--\xc2\xb0" "C";
     if (s_weather_temp != INT_MIN) {
         int  temp = s_weather_temp;
@@ -501,7 +501,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     if (s_weather_code >= 0)
         draw_weather_icon(ctx, s_weather_code, weather_x - 10, weather_y + 18, show_shadow);
 
-    // ── Date ─────────────────────────────────────────────────
+    // -- Date -------------------------------------------------
     if (s_show_date) {
         static const char *days[]   = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
         static const char *months[] = {"Jan","Feb","Mar","Apr","May","Jun",
@@ -515,12 +515,12 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     }
 }
 
-// ─── Tick handler ─────────────────────────────────────────────
+// --- Tick handler ---------------------------------------------
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     layer_mark_dirty(s_canvas_layer);
 }
 
-// ─── Parse helper ─────────────────────────────────────────────
+// --- Parse helper ---------------------------------------------
 static int parse_int(const char **p) {
     int val = 0;
     while (**p >= '0' && **p <= '9') {
@@ -530,7 +530,7 @@ static int parse_int(const char **p) {
     return val;
 }
 
-// ─── AppMessage ───────────────────────────────────────────────
+// --- AppMessage -----------------------------------------------
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *tu = dict_find(iter, KEY_TEMPERATURE_UNIT);
     if (tu) s_use_fahrenheit = (tu->value->int32 != 0);
@@ -583,7 +583,7 @@ static void inbox_dropped_handler(AppMessageResult reason, void *context) {
     APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped: %d", (int)reason);
 }
 
-// ─── Window lifecycle ─────────────────────────────────────────
+// --- Window lifecycle -----------------------------------------
 static void window_load(Window *window) {
     Layer *root   = window_get_root_layer(window);
     GRect  bounds = layer_get_bounds(root);
@@ -596,7 +596,7 @@ static void window_unload(Window *window) {
     layer_destroy(s_canvas_layer);
 }
 
-// ─── Init / Deinit ───────────────────────────────────────────
+// --- Init / Deinit -------------------------------------------
 static void init(void) {
     s_small_font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
     s_date_font  = fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD);
