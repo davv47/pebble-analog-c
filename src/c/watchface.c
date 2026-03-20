@@ -132,7 +132,6 @@ int hour_angle, int min_angle,
 int wx, int wy, int ww, int wh) {
 int threshold = 18;
 
-```
 GPoint tip_hour = GPoint(
     centre.x + sin_lookup(DEG_TO_TRIGANGLE(hour_angle)) * hour_len / TRIG_MAX_RATIO,
     centre.y - cos_lookup(DEG_TO_TRIGANGLE(hour_angle)) * hour_len / TRIG_MAX_RATIO
@@ -204,7 +203,6 @@ for (int i = 0; i < s_event_count; i++) {
     }
 }
 return false;
-```
 
 }
 
@@ -354,7 +352,6 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 GRect   bounds = layer_get_bounds(layer);
 GPoint  centre = GPoint(bounds.size.w / 2, bounds.size.h / 2);
 
-```
 graphics_context_set_fill_color(ctx, s_bg_color);
 graphics_fill_rect(ctx, bounds, 0, GCornerNone);
 
@@ -517,8 +514,7 @@ if (s_show_date) {
         GRect(0, bounds.size.h - 24, bounds.size.w, 24),
         GTextOverflowModeWordWrap, GTextAlignmentCenter, NULL);
 }
-```
-
+    
 }
 
 // — Tick handler ———————————————
@@ -541,7 +537,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 Tuple *tu = dict_find(iter, KEY_TEMPERATURE_UNIT);
 if (tu) s_use_fahrenheit = (tu->value->int32 != 0);
 
-```
 Tuple *sd = dict_find(iter, KEY_SHOW_DATE);
 if (sd) s_show_date = (sd->value->int32 != 0);
 
@@ -584,7 +579,6 @@ Tuple *wc = dict_find(iter, KEY_WEATHER_CODE);
 if (wc) s_weather_code = wc->value->int32;
 
 layer_mark_dirty(s_canvas_layer);
-```
 
 }
 
