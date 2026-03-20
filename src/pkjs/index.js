@@ -205,7 +205,7 @@ function fetchAllCalendars() {
     }
 
     var now    = new Date();
-    var cutoff = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    var cutoff = new Date(now.getTime() + 12 * 60 * 60 * 1000);
     console.log("Fetching " + entries.length + " calendars");
 
     var allEvents = [], pending = entries.length;
