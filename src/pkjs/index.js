@@ -1,5 +1,9 @@
 // index.js — PebbleKit JS
+<<<<<<< HEAD
 console.log("index.js v5 loaded");
+=======
+console.log("index.js v8 loaded");
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
 
 // ─── Weather ──────────────────────────────────────────────────────────────────
 
@@ -97,10 +101,13 @@ function parseICS(raw, calendarIndex, now, cutoff) {
                 if (!end) end = new Date(start.getTime() + 60 * 60 * 1000);
 
                 if (end > now && start < cutoff) {
+<<<<<<< HEAD
                     // startMins = absolute position on the 12-hour clock face.
                     // e.g. 2:37 PM → (14*60 + 37) % 720 = 157 minutes
                     // This makes the arc sit at the same position as the hands,
                     // so an ongoing game has the hour hand inside the arc.
+=======
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
                     var startH    = start.getHours();
                     var startM    = start.getMinutes();
                     var startMins = (startH * 60 + startM) % 720;
@@ -109,8 +116,11 @@ function parseICS(raw, calendarIndex, now, cutoff) {
                     var endM      = end.getMinutes();
                     var endMins   = (endH * 60 + endM) % 720;
 
+<<<<<<< HEAD
                     // Duration in clock-face minutes. If end wraps past 12,
                     // add 720 to keep it positive.
+=======
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
                     var durationMins = endMins - startMins;
                     if (durationMins <= 0) durationMins += 720;
                     durationMins = Math.min(durationMins, 720);
@@ -150,11 +160,43 @@ function parseICS(raw, calendarIndex, now, cutoff) {
     return events;
 }
 
-// ─── Send to watch ────────────────────────────────────────────────────────────
+// ─── Send display settings to watch ──────────────────────────────────────────
+// Keys:
+//   2  = KEY_TEMPERATURE_UNIT  (0=C, 1=F)
+//   3  = KEY_SHOW_DATE         (0=hide, 1=show)
+//   8  = KEY_SHOW_TICKS        (0=hide, 1=show)
+//   9  = KEY_CAL_COLOR_0       (palette index 0–15)
+//   10 = KEY_CAL_COLOR_1
+//   11 = KEY_CAL_COLOR_2
+//   12 = KEY_HOUR_HAND_COLOR   (palette index 0–15)
+
+function sendDisplaySettings() {
+    var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
+    var msg = {
+        2:  config.useFahrenheit ? 1 : 0,
+        3:  (config.showDate  !== false) ? 1 : 0,
+        8:  (config.showTicks !== false) ? 1 : 0,
+        9:  typeof config.color0    === "number" ? config.color0    : 0,
+        10: typeof config.color1    === "number" ? config.color1    : 4,
+        11: typeof config.color2    === "number" ? config.color2    : 8,
+        12: typeof config.hourColor === "number" ? config.hourColor : 11,
+    };
+    Pebble.sendAppMessage(msg, function() {
+        console.log("Display settings sent: " + JSON.stringify(msg));
+    }, function(e) {
+        console.log("Display settings send failed: " + JSON.stringify(e));
+    });
+}
+
+// ─── Send events to watch ─────────────────────────────────────────────────────
 
 function sendEventsToWatch(events) {
     // Sort by start time so the most imminent events appear first
     events.sort(function(a, b) { return a.startMins - b.startMins; });
+<<<<<<< HEAD
+=======
+    events = events.slice(0, 3);
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
 
     // Limit to MAX_EVENTS (must match #define MAX_EVENTS 3 in main.c)
     events = events.slice(0, 3);
@@ -167,7 +209,10 @@ function sendEventsToWatch(events) {
 
     console.log("Sending " + events.length + " events: " + packed);
 
+<<<<<<< HEAD
     // Use numeric key 5 to match KEY_CALENDAR_EVENTS in main.c
+=======
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
     Pebble.sendAppMessage({ 5: packed }, function() {
         console.log("Events sent successfully");
     }, function(e) {
@@ -204,23 +249,34 @@ function fetchCalendar(url, calendarIndex, now, cutoff, callback) {
 
 function fetchAllCalendars() {
     var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
-    var urls = [config.url0 || "", config.url1 || "", config.url2 || ""]
-        .filter(function(u) { return u.length > 0; });
+    var allUrls = [config.url0 || "", config.url1 || "", config.url2 || ""];
+
+    // Filter but keep original index so calIndex matches color slot
+    var urls = [];
+    allUrls.forEach(function(url, idx) {
+        if (url.length > 0) urls.push({ url: url, idx: idx });
+    });
 
     if (urls.length === 0) {
         console.log("No calendar URLs configured");
         return;
     }
 
+<<<<<<< HEAD
     // Cutoff = 24h so events later today/tomorrow are included.
     var now    = new Date();
     var cutoff = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     console.log("Fetching calendars: now=" + now.toUTCString() + " cutoff=" + cutoff.toUTCString());
+=======
+    var now    = new Date();
+    var cutoff = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
     var allEvents = [];
     var pending   = urls.length;
 
-    urls.forEach(function(url, idx) {
-        fetchCalendar(url, idx, now, cutoff, function(err, events) {
+    urls.forEach(function(entry) {
+        fetchCalendar(entry.url, entry.idx, now, cutoff, function(err, events) {
             if (!err) allEvents = allEvents.concat(events);
             pending--;
             if (pending === 0) sendEventsToWatch(allEvents);
@@ -233,14 +289,19 @@ function fetchAllCalendars() {
 Pebble.addEventListener("ready", function() {
     console.log("PebbleKit JS ready");
 
+<<<<<<< HEAD
     localStorage.setItem("calendarConfig", JSON.stringify({
         url0: "https://ics.ecal.com/ecal-sub/68e3f1dc4a81aa0008f1e150/MLB%20.ics",
         url1: "",
         url2: ""
     }));
+=======
+    var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
+
+    sendDisplaySettings();
+>>>>>>> a5b4b0c (Updated calendar selector, weather icon)
 
     navigator.geolocation.getCurrentPosition(function(pos) {
-        var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
         fetchWeather(pos.coords.latitude, pos.coords.longitude,
                      config.useFahrenheit || false);
     }, function(err) {
@@ -251,10 +312,10 @@ Pebble.addEventListener("ready", function() {
 
     setInterval(fetchAllCalendars, 30 * 60 * 1000);
     setInterval(function() {
+        var cfg = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
         navigator.geolocation.getCurrentPosition(function(pos) {
-            var config = JSON.parse(localStorage.getItem("calendarConfig") || "{}");
             fetchWeather(pos.coords.latitude, pos.coords.longitude,
-                         config.useFahrenheit || false);
+                         cfg.useFahrenheit || false);
         }, function() {}, { timeout: 15000 });
     }, 30 * 60 * 1000);
 });
@@ -268,11 +329,24 @@ Pebble.addEventListener("showConfiguration", function() {
 Pebble.addEventListener("webviewclosed", function(e) {
     if (e.response && e.response !== "CANCELLED") {
         try {
-            var config = JSON.parse(decodeURIComponent(e.response));
+            var raw = e.response;
+            var decoded;
+            try { decoded = decodeURIComponent(raw); } catch(err) { decoded = raw; }
+            var config = JSON.parse(decoded);
             localStorage.setItem("calendarConfig", JSON.stringify(config));
+            console.log("Config saved: " + JSON.stringify(config));
+
+            sendDisplaySettings();
+
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                fetchWeather(pos.coords.latitude, pos.coords.longitude,
+                             config.useFahrenheit || false);
+            }, function() {}, { timeout: 15000 });
+
             fetchAllCalendars();
         } catch (err) {
             console.log("Failed to parse config response: " + err);
+            console.log("Raw response was: " + e.response);
         }
     }
 });
